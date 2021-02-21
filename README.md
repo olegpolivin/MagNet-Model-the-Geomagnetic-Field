@@ -1,2 +1,12 @@
 # MagNet-Model-the-Geomagnetic-Field
 Code for MagNet: Model the Geomagnetic Field Competition on DrivenData
+
+## High-level description of the architecture
+
+### Chosen methods
+Inherently, this problem falls into the multivariate time-series forecasting domain. There exist several established ways to tackle this problem. The classical one is to use SARIMAX models which is an extension of autoregressive models (like ARIMA) to include explanatory variables as well. It was used a lot before the appearance of deep learning models, but normally shows worse performance when there is enough data. It also takes quite a lot of time to make a prediction when there is a lot of data, so we decided not to use this method. It is also possible to use random forests or gradient boosting methods by preparing the time-series data to the "table" format which is needed for these methods. However, the time-series data could be directly used by Deep Learning models that were specifically developed to deal with that type of data. Therefore, we quickly switched to building neural networks for sequential data, that is using Recurrent Neural Networks (RNNs) and in particular the Long Short-Term Memory (LSTM) models that allow to deal with longer sequences.\\
+2
+All work for the competition is done in Python and PyTorch, code versioning is performed using a private GitHub repository and the code will be shared after the end of the competition. We build an LSTM neural network with 512 features in the only hidden layer.
+
+### Deep-learning architecture
+Our input data is a matrix that is `Batch_Size x 72 x 87` dimensions. Here, `72` represents `72` hours prior to the observation of the `DST` value. And `87` represents the number of various features that we calculated. We treat the sequential input data with an LSTM model with one hidden layer of size `512`. As an output we get a matrix of `Batch_Size x 72 x 512`, that is we keep the output features from the only layer of the LSTM for each time `t`. Next, we reduce the dimensionality of the matrix using `Maxpool` layer with `kernel_size=3` coupled with dropout and `ReLU` activation. This allows to reduce the dimensinality to `Batch_Size x 72 x 170`. Next, the output is flattened, and we apply two fully connected layers separated by `Dropout` and `ReLU` activation function. First fully-connected layers decreases the dimensionality from `72 x 170 -> 1024` and the second one is `1024 -> 2`. For the exact model see `model.py` script.
